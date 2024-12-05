@@ -34,10 +34,15 @@ def part1(rules, updates):
                 adj[y] = []
             adj[x].append(y)
         TS = topologicalSort(adj)
-        print(TS, update)
+
+        # Just my assumption for this problem - all pages have rules; otherwise we have multiple possible TS
+        if len(TS) != len(update):
+            assert False
+
         if TS == update:
             # print(update, int(update[n // 2]))
             answer += int(update[n // 2])
+        
     return answer
 
 
