@@ -37,8 +37,41 @@ def part1(grid):
 
 
 
-def part2(a):
-    pass
+def part2(grid):
+    m = len(grid)
+    n = len(grid[0])
+
+    def valid(r, c):
+        return r >= 0 and r < m and c >= 0 and c < n
+
+    antennas = defaultdict(list)
+    for r in range(m):
+        for c in range(n):
+            antenna = grid[r][c]
+            if antenna != '.':
+                antennas[antenna].append((r, c))
+
+    antinodes = set()
+    for antenna, coors in antennas.items():
+        numAntennas = len(coors)
+        for i in range(numAntennas):
+            a = coors[i]
+            antinodes.add(a)
+            for j in range(i + 1, numAntennas):
+                b = coors[j]
+                dy = b[0] - a[0]
+                dx = b[1] - a[1]
+
+                r1, c1 = b[0] + dy, b[1] + dx
+                while valid(r1, c1):
+                    antinodes.add((r1, c1))
+                    r1, c1 = r1 + dy, c1 + dx
+
+                r2, c2 = a[0] - dy, a[1] - dx
+                while valid(r2, c2):
+                    antinodes.add((r2, c2))
+                    r2, c2 = r2 - dy, c2 - dx
+    return len(antinodes)
 
 
 if __name__ == "__main__":
