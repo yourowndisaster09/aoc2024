@@ -29,8 +29,54 @@ def part1(data):
     return sum([i * v for i, v in enumerate(moved)])
 
 
-def part2(a):
-    pass
+def part2(data):
+    moved = []
+    i = 0
+    free = False
+    total = 0
+    nums = {}
+    available = {}
+    for d in data:
+        count = int(d)
+        if free:
+            available[total] = count
+        else:
+            nums[total] = count
+        for _ in range(count):
+            if free:
+                moved.append(None)
+            else:
+                moved.append(i)
+        total += count
+        if not free:
+            i += 1
+        free = not free
+
+    # print(nums)
+    # print(available)
+    # print(moved)
+
+    for x in sorted(nums.keys(), reverse=True):
+        match = None
+        for y in sorted([k for k in available.keys() if k < x]):
+            if available[y] >= nums[x]:
+                match = y
+                break
+
+        if match is not None:
+            # print(f"Move {nums[x]} at {x} to {y}")
+            for i in range(nums[x]):
+                moved[y + i] = moved[x + i]
+                moved[x + i] = None
+            # print(moved)
+            remaining = available[y] - nums[x]
+            if remaining:
+                available[y + nums[x]] = remaining
+            del available[y]
+            # print(available)
+    # print(moved)
+
+    return sum([i * v for i, v in enumerate(moved) if v is not None])
 
 
 if __name__ == "__main__":
