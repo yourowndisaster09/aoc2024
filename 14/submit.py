@@ -25,10 +25,6 @@ def part1(robots, m, n, time):
 
 def part2(robots, m, n):
     numRobots = len(robots)
-    midX = n // 2
-    midY = m // 2
-
-    q1 = q2 = q3 = q4 = 0
     robotPositions = [r[0] for r in robots]
     t = 0
     while True:
@@ -43,9 +39,6 @@ def part2(robots, m, n):
             print(t)
             [print(''.join(g)) for g in graph]
             print()
-
-
-    return q1 * q2 * q3 * q4
 
 
 if __name__ == "__main__":
