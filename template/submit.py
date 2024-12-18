@@ -1,4 +1,8 @@
 import sys
+from math import *
+from time import *
+from collections import *
+from heapq import *
 
 
 def part1(a):
@@ -12,11 +16,11 @@ def part2(a):
 if __name__ == "__main__":
     data = []
     with open(sys.argv[1], 'r') as f:
-        for line in f:
-            l = line.strip()
-            if not l:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line:
                 break
-            data.append(l)
+            data.append(line)
 
     if sys.argv[2] == "part1":
         print(f'Part 1 Answer = {part1(data)}')
