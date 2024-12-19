@@ -5,11 +5,12 @@ from collections import *
 from heapq import *
 
 
-def part1(a):
+def part1(data):
+    print(data)
     pass
 
 
-def part2(a):
+def part2(data):
     pass
 
 
