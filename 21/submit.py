@@ -4,7 +4,6 @@ from time import *
 from collections import *
 from heapq import *
 from re import *
-from functools import cache
 
 DIRS = ['^', '>', 'v', '<', 'A']
 DIRPAD = {
@@ -52,24 +51,26 @@ DIR_PATHS = {
     }
 }
 
-@cache
-def bestPath(a, b, depth):
-    if depth == 1:
-        return len(DIR_PATHS[a][b][0])
-    minPath = inf
+def bestPath(a, b):
+    paths = []
     for path in DIR_PATHS[a][b]:
-        lenPath = 0
+        prefix = ['']
         start = 'A'
         for end in path:
-            lenPath += bestPath(start, end, depth - 1)
+            newPrefix = []
+            # print(f"{start} to {end} = {prefix} + {DIR_PATHS[start][end]}")
+            for p in DIR_PATHS[start][end]:
+                for pref in prefix:
+                    newPrefix.append(pref + p)
             start = end
-        minPath = min(minPath, lenPath)
-    return minPath
+            prefix = newPrefix
+        paths += prefix
+    return min(paths, key=len)
 
 COSTS = defaultdict(dict)
 for a in DIRS:
     for b in DIRS:
-        COSTS[a][b] = bestPath(a, b, 25)
+        COSTS[a][b] = bestPath(a, b)
 
 NUMPAD = {
     'A': ['3', None, None, '0'],
@@ -85,7 +86,7 @@ NUMPAD = {
     '9': [None, None, '6', '8'],
 }
 
-def clickNumPad(start, end):
+def clickNumPad(start, end, COST_TABLE):
     D = defaultdict(dict)
     V = defaultdict(dict)
     for i in range(11):
@@ -105,11 +106,11 @@ def clickNumPad(start, end):
         for i, nextNumber in enumerate(NUMPAD[number]):
             nextCursor = DIRS[i]
             if nextNumber and not V[nextNumber][nextCursor]:
-                nextCost = cost + COSTS[cursor][nextCursor]
-                # print(f"{number} to {nextNumber} = {cursor} to {nextCursor} = {COSTS[cursor][nextCursor]}")
+                nextCost = cost + len(COST_TABLE[cursor][nextCursor])
+                # print(f"{number} to {nextNumber} = {cursor} to {nextCursor} = {len(COST_TABLE[cursor][nextCursor])}")
                 if nextNumber == end:
                     # print(f"{number} to {nextNumber} = {nextCursor} to A = 1 (CLICK)")
-                    nextCost += COSTS[nextCursor]['A']
+                    nextCost += len(COST_TABLE[nextCursor]['A'])
                     nextCursor = 'A'
                 if nextCost < D[nextNumber][nextCursor]:
                     D[nextNumber][nextCursor] = nextCost
@@ -123,7 +124,7 @@ def part1(data):
         start = 'A'
         cost = 0
         for end in code:
-            cost += clickNumPad(start, end)
+            cost += clickNumPad(start, end, COSTS)
             start = end
         print(cost)
         complexities += (cost * int(sub("[^0-9]", "", code)))
@@ -136,7 +137,7 @@ def part2(data):
         start = 'A'
         cost = 0
         for end in code:
-            cost += clickNumPad(start, end)
+            cost += clickNumPad(start, end, COSTS)
             start = end
         complexities += (cost * int(sub("[^0-9]", "", code)))
     return complexities
