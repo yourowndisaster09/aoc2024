@@ -28,96 +28,66 @@ def part1(data, wires):
 
 
 def part2(data, wires):
-    n = len(wires)
-    keys = data.keys()
-    xs = sorted([k for k in keys if k[0] == 'x'], reverse=True)
-    ys = sorted([k for k in keys if k[0] == 'y'], reverse=True)
-    x = int(''.join([str(data[x]) for x in xs]), 2)
-    y = int(''.join([str(data[y]) for y in ys]), 2)
-    zBin = list(bin(x + y)[2:])
-    required = {}
-    i = 0
-    while zBin:
-        key = f'z{i:02}'
-        required[key] = int(zBin.pop())
-        i += 1
-    print(required)
-
-
-    # Model as dag
-    adj = defaultdict(list)
-    outdegrees = defaultdict(int)
-    oppositeAdj = defaultdict(list)
+    w = {}
     for a, op, b, z in wires:
-        key = f'{a} {op} {b}'
-        adj[a].append(key)
-        adj[b].append(key)
-        adj[key].append(z)
+        w[f'{a} {op} {b}'] = z
 
-        outdegrees[a] += 1
-        outdegrees[b] += 1
-        outdegrees[key] += 1
+    def findWire(a, op, b):
+        test1 = f'{a} {op} {b}'
+        if test1 in w:
+            return (w[test1], test1)
+        test2 = f'{b} {op} {a}'
+        if test2 in w:
+            return (w[test2], test2)
+        print("Missing wire", a, op, b)
+        assert False
 
-        oppositeAdj[z].append(key)
-        oppositeAdj[key].append(a)
-        oppositeAdj[key].append(b)
+    swaps = []
+    z = {}
+    z[0] = 'z00'
+    c = {}
+    c[0], _ = findWire('x00', 'AND', 'y00')
+    for i in range(1, 45):
+        p1, _ = findWire(f'x{i:02}', 'XOR', f'y{i:02}')
+        p2 = c[i - 1]
+        try:
+            posZ, posWire = findWire(p1, 'XOR', p2)
+        except:
+            corrZ = f'z{i:02}'
+            print("No wire for", corrZ, p1, p2)
+            realWire = [key for key, value in w.items() if value == corrZ][0]
+            a, op, b = realWire.split(' ')
+            if a == p2:
+                rightP1 = b
+            else:
+                rightP1 = a
+            realWire = [key for key, value in w.items() if value == rightP1][0]
+            wrongWire = [key for key, value in w.items() if value == p1][0]
+            w[wrongWire] = rightP1
+            w[realWire] = p1
+            swaps.append(rightP1)
+            swaps.append(p1)
+            print("SWAP", rightP1, p1)
 
-        if z[0] == 'z':
-            if op != 'XOR' and z[1:] != '45':
-                print(key, z)
+        if posZ[0] == 'z':
+            z[i] = posZ
         else:
-            if a[0] not in {'x', 'y'} and b[0] not in {'x', 'y'}:
-                if op == 'XOR':
-                    print(key, z)
+            corrZ = f'z{i:02}'
+            realWire = [key for key, value in w.items() if value == corrZ][0]
+            w[posWire] = corrZ
+            w[realWire] = posZ
+            z[i] = corrZ
+            swaps.append(corrZ)
+            swaps.append(posZ)
+            print("SWAP", corrZ, posZ)
 
-    def traverse(k, tab=0):
-        print(f"{''.join(['  '] * tab)}{k} = {oppositeAdj[k]}")
-        for neighbor in oppositeAdj[k]:
-            for n in oppositeAdj[neighbor]:
-                traverse(n, tab + 1)
-    traverse('z03')
+        c1, _ = findWire(f'x{i:02}', 'AND', f'y{i:02}')
+        c2a, _ = findWire(f'x{i:02}', 'XOR', f'y{i:02}')
+        c2b = c[i - 1]
+        c2, _ = findWire(c2a, 'AND', c2b)
+        c[i], _ = findWire(c1, 'OR', c2)
 
-
-
-    w = deque(wires)
-    while w:
-        x, op, y, z = w.popleft()
-        if x in data and y in data:
-            if op == 'AND':
-                data[z] = data[x] & data[y]
-            elif op == 'OR':
-                data[z] = data[x] | data[y]
-            elif op == 'XOR':
-                data[z] = data[x] ^ data[y]
-        else:
-            w.append((x, op, y, z))
-    current = {k: v for k, v in data.items() if k[0] == 'z'}
-
-    # print(data)
-    # for k in required.keys():
-    #     if current[k] != required[k]:
-    #         print(f"Wrong {k}, needs {required[k]} but got {current[k]}")
-    #         if input("Continue? ") == 'n':
-    #             break
-
-    #         # visited = set()
-    #         # q = deque([k])
-    #         # while q:
-    #         #     node = q.popleft()
-    #         #     if node in visited:
-    #         #         continue
-    #         #     print("  ", node)
-    #         #     visited.add(node)
-    #         #     for neighbor in oppositeAdj[node]:
-    #         #         if neighbor not in visited:
-    #         #             q.append(neighbor)
-
-
-    # # print({k for k, v in outdegrees.items() if v == 0})
-
-
-
-
+    return ",".join(sorted(swaps))
 
 
 if __name__ == "__main__":
